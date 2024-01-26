@@ -7,17 +7,16 @@ IMAGE_TAG := $(BASE_IMAGE):$(VERSION)
 KIND_CLUSTER := coffee-cluser
 
 ## Setup
-# For Mac Users
+# For Mac Users with HomeBrew Package Manager
 cli.setup.mac:
 	brew update
 	brew list kubectl || brew install kubectl
 	brew list kind || brew install kind
 
-# For Windows users on Choclatey
+# For Windows users on Choclatey Package Manager
 cli.setup.windows:
 	choco upgrade chocolatey
 	choco install kind
-	choco install kubectl
 	choco install kubernetes-cli
 
 
