@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: coffee-shop
+--- 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: coffee-api
+  name: coffee-api
+  namespace: coffee-shop
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: coffee-api
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: coffee-api
+    spec:
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+      containers:
+      - image: coffee-no-java:0.0.1
+        name: coffee-api
+        ports:
+        - containerPort: 8585
+        resources:
+          limits:
+            cpu: "500m" # Up to half a core
+            memory: "2Gi"
+          requests:
+            cpu: "250m" # Use 1/4th a core
+            memory: "1Gi"
+status: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: coffee-api
+  name: coffee-api
+  namespace: coffee-shop
+spec:
+  ports:
+  - port: 8585
+  selector:
+    app: coffee-api
+status:
+  loadBalancer: {}

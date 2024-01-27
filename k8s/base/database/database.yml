@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: coffee-shop
+--- 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-config
+  namespace: coffee-shop
+data:
+  db_password: postgres
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: database
+  name: database-pod
+  namespace: coffee-shop
+spec:
+  selector:
+    matchLabels:
+      app: database
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: database
+    spec:
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+      containers:
+      - name: postgres
+        image: postgres:13-alpine
+        resources:
+          limits:
+            cpu: "1000m" # Up to 1 full core
+          requests:
+            cpu: "1000m" # Use 1 full core
+        imagePullPolicy: Always
+        env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: db-config
+              key: db_password
+        ports:
+        - name: postgres
+          containerPort: 5432
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -h
+            - localhost
+            - -U
+            - postgres
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -h
+            - localhost
+            - -U
+            - postgres
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: database
+  name: database
+  namespace: coffee-shop
+spec:
+  type: ClusterIP
+  selector:
+    app: database
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: postgres
