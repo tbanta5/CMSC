@@ -21,6 +21,8 @@ spec:
       labels:
         app: coffee-api
     spec:
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
       containers:
       - image: coffee-no-java:0.0.1
         name: coffee-api
@@ -46,8 +48,6 @@ metadata:
 spec:
   ports:
   - port: 8585
-    protocol: TCP
-    targetPort: 8585
   selector:
     app: coffee-api
 status:

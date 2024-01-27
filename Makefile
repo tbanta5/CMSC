@@ -37,8 +37,9 @@ build:
 # Create a new kind cluster
 kind-up:
 	kind create cluster \
+		--image kindest/node:v1.29.0@sha256:eaa1450915475849a73a9227b8f201df25e55e268e5d619312131292e324d570 \
 		--name $(KIND_CLUSTER) \
-		--config k8s/kind/kind-config.yml
+		--config k8s/kind/kind-config.yml 
 	kubectl config set-context --current --namespace=coffee-shop
 
 # Load docker into KiND environment

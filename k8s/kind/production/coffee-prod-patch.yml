@@ -6,8 +6,6 @@ metadata:
 spec:
   template:
     spec:
-      dnsPolicy: ClusterFirstWithHostNet
-      hostNetwork: true
       containers:
       - name: coffee-api
         resources:
