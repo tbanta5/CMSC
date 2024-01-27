@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coffee-api
+  namespace: coffee-shop
+spec:
+  template:
+    spec:
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true
+      containers:
+      - name: coffee-api
+        resources:
+          limits:
+            cpu: "2000m" # Up to 2 full cores
+            memory: "4Gi"
+          requests:
+            cpu: "1000m" # Use 1 full cores
+            memory: "2Gi"

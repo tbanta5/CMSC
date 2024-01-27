@@ -2,12 +2,12 @@ FROM golang:1.21 as builder
 ENV CGO_ENABLED 0
 ARG VERSION
 ARG ENVIRONMENT
-ARG PORT
+ARG APIPORT
 
 COPY . /coffee-api
 WORKDIR /coffee-api/cmd/api
 # Build the Binary, passing in VERSION from the Makefile 
-RUN go build -ldflags="-X 'main.VERSION=${VERSION}' -X 'main.PORT=${PORT}' -X 'main.ENV=${ENVIRONMENT}'" -o coffee-api
+RUN go build -ldflags="-X 'main.VERSION=${VERSION}' -X 'main.PORT=${APIPORT}' -X 'main.ENV=${ENVIRONMENT}'" -o coffee-api
 
 FROM alpine:3.19
 # Keep these ARGS in the final image
@@ -24,7 +24,7 @@ COPY --from=builder --chown=api-user:api-user /coffee-api/cmd/api/coffee-api /cm
 
 USER api-user
 WORKDIR /cmsc
-EXPOSE ${PORT}
+EXPOSE ${APIPORT}
 CMD ["./coffee-api"]
 
 LABEL org.opencontainers.image.created="${BUILD_DATE}" \
