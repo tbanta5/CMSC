@@ -12,7 +12,8 @@ Tools leveraged to create a cohesive and approchable development environment are
 
 ## Design
 
-![alt text](https://github.com/joshua-seals/gopherhelx/blob/readme-illustration/.readme-images/images/package-oriented-design.png?raw=true)
+![alt text](https://github.com/tbanta5/CMSC/blob/main/.readme-images/Initia-arch.png)
+
 ## Development
 
 ### Setup
