@@ -6,6 +6,7 @@ VERSION := 0.0.1
 BASE_IMAGE := coffee-no-java
 IMAGE_TAG := $(BASE_IMAGE):$(VERSION)
 KIND_CLUSTER := coffee-cluser
+KIND_IMAGE := kindest/node:v1.29.0@sha256:eaa1450915475849a73a9227b8f201df25e55e268e5d619312131292e324d570 
 
 ## Setup
 # For Mac Users with HomeBrew Package Manager
@@ -37,7 +38,7 @@ build:
 # Create a new kind cluster
 kind-up:
 	kind create cluster \
-		--image kindest/node:v1.29.0@sha256:eaa1450915475849a73a9227b8f201df25e55e268e5d619312131292e324d570 \
+		--image $(KIND_IMAGE) \
 		--name $(KIND_CLUSTER) \
 		--config k8s/kind/kind-config.yml 
 	kubectl config set-context --current --namespace=coffee-shop
