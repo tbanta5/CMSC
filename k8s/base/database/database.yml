@@ -17,7 +17,7 @@ kind: Deployment
 metadata:
   labels:
     app: database
-  name: database-pod
+  name: database
   namespace: coffee-shop
 spec:
   selector:

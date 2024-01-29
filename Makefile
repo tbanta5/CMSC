@@ -1,7 +1,7 @@
 ## Variables
 ENVIRONMENT := develop
-APIPORT := 8585
-DBPORT := 5432
+APIPORT := 8585 # Will also need manual changes in k8s manifests
+DBPORT := 5432  # Will also need manual changes in k8s manifests
 VERSION := 0.0.1
 BASE_IMAGE := coffee-no-java
 IMAGE_TAG := $(BASE_IMAGE):$(VERSION)
@@ -15,10 +15,14 @@ cli.setup.mac:
 	brew list kubectl || brew install kubectl
 	brew list kind || brew install kind
 
-# For Windows users on Choclatey Package Manager
+# For Windows users with Choclatey Package Manager
+# https://community.chocolatey.org/
+# Must 'choco install make' in order to run the code.
+# Choclatey commands will likely need to be run from an Administrative Console.
 cli.setup.windows:
 	choco upgrade chocolatey
 	choco install kind
+	choco install kustomize
 	choco install kubernetes-cli
 
 
@@ -36,6 +40,10 @@ build:
 
 ## KiND Kubernetes 
 # Create a new kind cluster
+# the k8s/kind/kind-config.yml file specifies
+# host to container port mappings for easy ingress/egress
+# of user and application data. 
+# Similar to docker host:container port mappings with --expose or -p flags.
 kind-up:
 	kind create cluster \
 		--image $(KIND_IMAGE) \
@@ -43,33 +51,30 @@ kind-up:
 		--config k8s/kind/kind-config.yml 
 	kubectl config set-context --current --namespace=coffee-shop
 
-# Load docker into KiND environment
+# Load docker image into KiND environment
 kind-load:
 	kind load docker-image $(IMAGE_TAG) --name $(KIND_CLUSTER)
 
-# Apply kubernetes manifests in k8s/ directory
-# Deploy the application into kubernetes
+# Apply kubernetes manifests in k8s/base directory
+# Deploy the application and supporting k8s infrastructure into KiND.
 kind-apply-dev:
 	kustomize build k8s/base/database | kubectl apply -f -
 	kubectl wait --namespace=coffee-shop --timeout=120s --for=condition=Available deployment/database-pod
 	kustomize build k8s/base/coffee-api | kubectl apply -f - 
 
 
-# Production deployment, this increases cpu and memory
+# For production deployments. This increases cpu and memory usage of coffee-api.
+# Kustomize allows for dynamic replacement of k8s/base manifest data 
+# by "patching" the k8s/kind/production manifests into them.
 kind-apply-prod:
 	kustomize build k8s/base/database | kubectl apply -f -
-	kubectl wait --namespace=coffee-shop --timeout=120s --for=condition=Available deployment/database-pod
+	kubectl wait --namespace=coffee-shop --timeout=120s --for=condition=Available deployment/database
 	kustomize build k8s/kind/production | kubectl apply -f -
 
-
-# Delete currently applied k8s manifests and objects. Needed before 
-# running kind-apply again.
+# Delete currently applied k8s manifests and objects.
 kind-delete:
 	kubectl delete svc,deployment coffee-api
-
-# Port forward kubernetes svc for localhost:8585/v1/liveness testing
-kind-forward:
-	kubectl port-forward -n coffee-shop svc/coffee-api $(APIPORT):$(APIPORT)
+	kubectl delete svc,deployment database
 
 # Check that kubernetes objects with label app=coffee-api and app=database are up
 kind-status:
