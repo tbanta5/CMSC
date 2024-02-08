@@ -23,6 +23,11 @@ spec:
     spec:
       dnsPolicy: ClusterFirstWithHostNet
       hostNetwork: true
+      # Here we use admin tooling to seed database
+      initContainers:
+      - name: migrate-database
+        image: coffee-no-java:0.0.1
+        command: ['./migrations']
       containers:
       - image: coffee-no-java:0.0.1
         name: coffee-api

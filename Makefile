@@ -59,7 +59,7 @@ kind-load:
 # Deploy the application and supporting k8s infrastructure into KiND.
 kind-apply-dev:
 	kustomize build k8s/base/database | kubectl apply -f -
-	kubectl wait --namespace=coffee-shop --timeout=120s --for=condition=Available deployment/database-pod
+	kubectl wait --namespace=coffee-shop --timeout=120s --for=condition=Available deployment/database
 	kustomize build k8s/base/coffee-api | kubectl apply -f - 
 
 
@@ -75,6 +75,10 @@ kind-apply-prod:
 kind-delete:
 	kubectl delete svc,deployment coffee-api
 	kubectl delete svc,deployment database
+
+# kind-restart: Rollout and restart new deployment of coffee-api
+kind-restart:
+	kubectl rollout restart deployment coffee-api
 
 # Check that kubernetes objects with label app=coffee-api and app=database are up
 kind-status:

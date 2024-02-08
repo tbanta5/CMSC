@@ -9,7 +9,7 @@ metadata:
   name: db-config
   namespace: coffee-shop
 data:
-  db_password: postgres
+  db_password: p@55word123
 
 ---
 apiVersion: apps/v1

@@ -9,10 +9,15 @@ import (
 func (app *application) Routes() *httprouter.Router {
 	router := httprouter.New()
 
-	router.HandlerFunc(http.MethodGet, "/", app.index)
+	// // Declare a session manager middleware for certain routes.
+	// dynamic := alice.New(app.sessionManager.LoadAndSave)
+	// Server crude html page.
+	router.Handler(http.MethodGet, "/", app.sessionManager.LoadAndSave(http.HandlerFunc(app.index)))
+	router.Handler(http.MethodGet, "/v1/coffee", app.sessionManager.LoadAndSave(http.HandlerFunc(app.listCoffees)))
+	router.Handler(http.MethodGet, "/v1/coffee/:id", app.sessionManager.LoadAndSave(http.HandlerFunc(app.getDescription)))
 
+	// Liveness is used by kubernetes
 	router.HandlerFunc(http.MethodGet, "/v1/liveness", app.liveness)
-	router.HandlerFunc(http.MethodGet, "/v1/readiness", app.readiness)
 
 	return router
 }
