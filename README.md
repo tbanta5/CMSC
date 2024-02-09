@@ -58,14 +58,20 @@ Let's test it out by running `make kind-up` which will create a new kubernetes c
 More than just establishing a development pattern, the hope is that this outline could model potential classroom lab configurations. 
 
 ### Why Container Technology
-The pervasiveness, ease of use and accessibility of container technology coupled with the free allowances from ![Docker for Academic institutions](https://www.docker.com/community/open-source/application/) make for a perfect way to distribute software to students with low overhead, little static and expedited usage without the hassle of setup. `Hassle` has been the unfortunate norm for all Java based labs at UMGC. With even experienced engineers spending upwards of 3 hours just to setup the environment for classwork. To put in current software terms, the Java Labs have a negative impact on developer "Velocity".
+The pervasiveness, ease of use and accessibility of container technology coupled with the free allowances from ![Docker for Academic institutions](https://www.docker.com/community/open-source/application/) make for a perfect way to distribute software to students with low overhead, little static and expedited usage without the hassle of setup. 
 
-Containers are the standard way to distribute software in professional settings because they facilitate reproducable development environments. Containers themselves are based on Linux Operating system fundamentals which are seldom taugh in acadamia although widely used. Teaching container technology fundamentals along with Linux/Unix concepts (ie common Bash commands) is paramount to institutions that advertise "current technologies and job readiness" to students. The good news is that this material could be covered in 1 introductory class, which also serves to guide students in initial setup of an environment they will continually use and build upon for all subsequent classes. 
+`Hassle` has been the unfortunate norm for all Java based labs at UMGC. With experienced engineers spending upwards of 3 hours just to setup the environment for classwork. To put in current software terms, the Java Labs have a negative impact on developer "Velocity".
+
+Containers are the standard way to distribute software in professional settings because they facilitate reproducable development environments. Containers themselves are based on Linux Operating system fundamentals which are seldom taugh in acadamia although widely used. 
+
+Teaching container technology fundamentals along with Linux/Unix concepts (ie common Bash commands) is paramount to institutions that advertise "current technologies and job readiness" to students. The good news is that this material could be covered in 1 introductory class. Said class also serving to guide students in setup of an environment they will continually use and build upon for all subsequent classes. 
 
 ### Microservices
 The microservice pattern is heavily used in current job markets and builds on container technology fundamentals. It also encompases concepts of System Design - which is extremely important in real world software development. 
 
-A microservice environment can easily grow and expand with students as they learn new concepts and materials. A student could learn to write a web application that interfaces with a docker contained database or perhaps said student in a later course is integrating multiple appliations as they learn to break down subsystems into individual services that are run in an orchestrator like Kubernetes or Docker Compose. 
+A microservice environment can easily grow and expand with students as they learn new concepts and materials. A student could learn to build web applications that interface with a docker contained database or perhaps said student in a later course is focusing on details of authentication/authorization in a full web architecture running in Kubernetes. 
+
+Following configuration as code best practices in kubernets manifests allows for a reproducable deployment environment among all students with any given set of applications. This allows educators more time for "teaching" rather than helpdesk work and cirriculum to be hyper focused on subject mastery (without concerns of complexities needed for setup).
 
 ### Core Language Selection - Golang
  A single language would be taught throughout the life of the university cirriculum with growing complexities in and around it. Concepts like infrastructure, concurrency, parallelism, web architectures, data structures, algorithms, and security could all help to expand and deepen student mastery of the language.
