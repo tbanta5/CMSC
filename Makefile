@@ -13,6 +13,7 @@ KIND_IMAGE := kindest/node:v1.29.0@sha256:eaa1450915475849a73a9227b8f201df25e55e
 cli.setup.mac:
 	brew update
 	brew list kubectl || brew install kubectl
+	brew list kustomize || brew install kustomize
 	brew list kind || brew install kind
 
 # For Windows users with Choclatey Package Manager
