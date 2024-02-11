@@ -13,11 +13,11 @@ func (app *application) Routes() *httprouter.Router {
 	// dynamic := alice.New(app.sessionManager.LoadAndSave)
 	// Server crude html page.
 	router.Handler(http.MethodGet, "/", app.sessionManager.LoadAndSave(http.HandlerFunc(app.index)))
-	router.Handler(http.MethodGet, "/v1/coffee", app.sessionManager.LoadAndSave(http.HandlerFunc(app.listCoffees)))
-	router.Handler(http.MethodGet, "/v1/coffee/:id", app.sessionManager.LoadAndSave(http.HandlerFunc(app.getDescription)))
+	router.Handler(http.MethodGet, "/coffee", app.sessionManager.LoadAndSave(http.HandlerFunc(app.coffees)))
+	router.Handler(http.MethodGet, "/coffee/:id", app.sessionManager.LoadAndSave(http.HandlerFunc(app.coffeeDesc)))
 
 	// Liveness is used by kubernetes
-	router.HandlerFunc(http.MethodGet, "/v1/liveness", app.liveness)
+	router.HandlerFunc(http.MethodGet, "/liveness", app.liveness)
 
 	return router
 }

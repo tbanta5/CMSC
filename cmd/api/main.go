@@ -6,6 +6,8 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/alexedwards/scs/pgxstore"
@@ -72,11 +74,22 @@ func main() {
 		ErrorLog:     slog.NewLogLogger(logger.Handler(), slog.LevelError),
 	}
 
+	go func() {
+		err = srv.ListenAndServe()
+		logger.Error(err.Error())
+		os.Exit(1)
+	}()
 	logger.Info("starting server", "addr", srv.Addr, "env", cfg.env)
 
-	err = srv.ListenAndServe()
-	logger.Error(err.Error())
-	os.Exit(1)
+	// Interrupt on SIGINT
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	<-shutdown
+
+	// Shutdown Gracefully
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*15)
+	defer cancel()
+	srv.Shutdown(ctx)
 
 }
 
