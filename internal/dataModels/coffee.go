@@ -4,9 +4,10 @@ import "context"
 
 // Metadata tags help us decode json and format for database.
 type Coffee struct {
-	ID          int    `db:"id" json:"id,omitempty"`
-	Name        string `db:"name" json:"name"`
-	Description string `db:"description" json:"description"`
+	ID          int     `db:"id" json:"id,omitempty"`
+	Name        string  `db:"name" json:"name"`
+	Description string  `db:"description" json:"description"`
+	Price       float64 `db:"price" json:"price"`
 }
 
 // Slice of Coffees
