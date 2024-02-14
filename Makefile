@@ -58,7 +58,7 @@ kind-load:
 
 # Apply kubernetes manifests in k8s/base directory
 # Deploy the application and supporting k8s infrastructure into KiND.
-kind-apply-dev:
+kind-apply:
 	kustomize build k8s/base/database | kubectl apply -f -
 	kubectl wait --namespace=coffee-shop --timeout=120s --for=condition=Available deployment/database
 	kustomize build k8s/base/coffee-api | kubectl apply -f - 
