@@ -15,7 +15,7 @@ CREATE TABLE coffee (
 	coffee_id INT GENERATED ALWAYS AS IDENTITY,
 	coffee_name TEXT,
 	coffee_description TEXT,
-	coffee_price NUMERIC(5,3),
+	coffee_price NUMERIC(5,2),
 	PRIMARY KEY (coffee_id)
 );
 

@@ -1,9 +1,6 @@
 package main
 
 import (
-	"context"
-	"time"
-
 	"log/slog"
 	"os"
 
@@ -19,27 +16,28 @@ import (
 func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	// Note terribly clear hear but due to darwin lib, must use pgx adapter or just database/sql
+	// The Darwin lib reqiures that pgx follow database/sql interfaces.
 	db, err := sql.Open("pgx", "user=postgres password=p@55word123 host=localhost port=5432 database=postgres sslmode=disable")
 	if err != nil {
 		logger.Error(err.Error())
 	}
 	defer db.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
 	err = db.Ping()
 	if err != nil {
 		logger.Error(err.Error())
 	}
 
-	schema.PrintSchema()
-
-	err = schema.Migrate(ctx, db)
+	err = schema.Migrate(db)
 	if err != nil {
 		logger.Error(err.Error())
 	}
 	logger.Info("Migrations Complete")
+
+	err = schema.Seed(db)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	logger.Info("Seed Complete")
 
 }
