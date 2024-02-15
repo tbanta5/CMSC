@@ -35,6 +35,7 @@ type application struct {
 	config         config
 	logger         *slog.Logger
 	sessionManager *scs.SessionManager
+	db             *pgxpool.Pool
 }
 
 func main() {
@@ -59,10 +60,13 @@ func main() {
 	sessionManager.Store = pgxstore.New(db)
 	sessionManager.Lifetime = 5 * time.Minute
 
+	// Initialize the app struct to hold all
+	// core functionality.
 	app := &application{
 		config:         cfg,
 		logger:         logger,
 		sessionManager: sessionManager,
+		db:             db,
 	}
 
 	srv := &http.Server{
