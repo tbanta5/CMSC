@@ -56,7 +56,7 @@ kind-up:
 kind-load:
 	kind load docker-image $(IMAGE_TAG) --name $(KIND_CLUSTER)
 
-# Apply kubernetes manifests in k8s/base directory
+# Development Mode: Apply kubernetes manifests in k8s/base directory
 # Deploy the application and supporting k8s infrastructure into KiND.
 kind-apply:
 	kustomize build k8s/base/database | kubectl apply -f -
@@ -73,6 +73,7 @@ kind-apply-prod:
 	kustomize build k8s/kind/production | kubectl apply -f -
 
 # Delete currently applied k8s manifests and objects.
+# If kind-restart doesn't work, this will clear all objects.
 kind-delete:
 	kubectl delete svc,deployment coffee-api
 	kubectl delete svc,deployment database
