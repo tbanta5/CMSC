@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"cmsc.group2.coffee-api/internal/dataModels"
 	"github.com/alexedwards/scs/pgxstore"
 	"github.com/alexedwards/scs/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -36,6 +38,11 @@ type application struct {
 	logger         *slog.Logger
 	sessionManager *scs.SessionManager
 	db             *pgxpool.Pool
+}
+
+func init() {
+	gob.Register(dataModels.Coffee{})
+	gob.Register([]dataModels.Coffee{})
 }
 
 func main() {

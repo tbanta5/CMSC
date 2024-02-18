@@ -16,6 +16,8 @@ CREATE TABLE coffee (
 	coffee_name TEXT,
 	coffee_description TEXT,
 	coffee_price NUMERIC(5,2),
+	coffee_caffeine TEXT,
+	coffee_calories INT,
 	PRIMARY KEY (coffee_id)
 );
 
@@ -23,13 +25,13 @@ CREATE TABLE coffee (
 -- Description: Cart will map to session token. 
 -- Each cart will contain user session and coffees added.
 -- If session is deleted, cart will also be deleted.
-CREATE TABLE shoppingcart (
-	cart_id INT GENERATED ALWAYS AS IDENTITY,
-	sessions_token TEXT,
-	customs_coffees_id INT,
-	PRIMARY KEY (cart_id),
-	CONSTRAINT fk_session
-		FOREIGN KEY(sessions_token)
-			REFERENCES sessions(token)
-			ON DELETE CASCADE
-);
+-- CREATE TABLE shoppingcart (
+-- 	cart_id INT GENERATED ALWAYS AS IDENTITY,
+-- 	sessions_token TEXT,
+-- 	customs_coffees_id INT,
+-- 	PRIMARY KEY (cart_id),
+-- 	CONSTRAINT fk_session
+-- 		FOREIGN KEY(sessions_token)
+-- 			REFERENCES sessions(token)
+-- 			ON DELETE CASCADE
+-- );
