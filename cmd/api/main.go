@@ -41,6 +41,8 @@ type application struct {
 }
 
 func init() {
+	// We must register the Coffee models
+	// to include in our session data with scs
 	gob.Register(dataModels.Coffee{})
 	gob.Register([]dataModels.Coffee{})
 }

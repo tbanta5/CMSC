@@ -10,7 +10,7 @@ import (
 )
 
 func (app *application) shoppingCart(w http.ResponseWriter, r *http.Request) {
-	shoppingCart, ok := app.sessionManager.Get(r.Context(), "shopping_cart").([]dataModels.Coffee)
+	shoppingCart, ok := app.sessionManager.Get(r.Context(), "shoppingCart").([]dataModels.Coffee)
 	if !ok {
 		shoppingCart = []dataModels.Coffee{}
 	}
@@ -38,7 +38,7 @@ func (app *application) addCoffee(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Ensure id is valid, then add to user's selection
-	coffeeList, ok := app.sessionManager.Get(r.Context(), "coffee_list").([]dataModels.Coffee)
+	coffeeList, ok := app.sessionManager.Get(r.Context(), "coffeeList").([]dataModels.Coffee)
 	if !ok {
 		app.logger.Error("Session doesn't contain coffeeList")
 		http.Error(w, "Coffee products not available", http.StatusBadRequest)
@@ -54,20 +54,20 @@ func (app *application) addCoffee(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if coffee.Name == "" {
-		app.logger.Error("User selected value does not exist", strconv.Itoa(id))
+		app.logger.Error("User selected value does not exist", "id", strconv.Itoa(id))
 		http.Error(w, "Invalid Selection", http.StatusBadRequest)
 		return
 	}
 
 	// Retrieve current session data
-	shoppingCart, ok := app.sessionManager.Get(r.Context(), "shopping_cart").([]dataModels.Coffee)
+	shoppingCart, ok := app.sessionManager.Get(r.Context(), "shoppingCart").([]dataModels.Coffee)
 	if !ok {
 		// If nothing in the cart, go ahead and create it.
 		shoppingCart = []dataModels.Coffee{}
 	}
 	// Add coffee product to shopping cart
 	shoppingCart = append(shoppingCart, coffee)
-	app.sessionManager.Put(r.Context(), "shopping_cart", shoppingCart)
+	app.sessionManager.Put(r.Context(), "shoppingCart", shoppingCart)
 
 	msg := map[string]string{"success": "cart updated"}
 	js, err := json.Marshal(msg)

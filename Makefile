@@ -8,9 +8,30 @@ IMAGE_TAG := $(BASE_IMAGE):$(VERSION)
 KIND_CLUSTER := coffee-cluser
 KIND_IMAGE := kindest/node:v1.29.0@sha256:eaa1450915475849a73a9227b8f201df25e55e268e5d619312131292e324d570 
 
-## Setup
-# For Mac Users with HomeBrew Package Manager
-cli.setup.mac:
+# ==============================================================================
+# Environment Setup
+#
+#	Having brew installed will simplify the process of installing all the tooling.
+#
+#	Run this command to install brew on your machine. This works for Linux, Mac and Windows.
+#	The script explains what it will do and then pauses before it does it.
+#	$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+#
+#	WINDOWS MACHINES
+#	These are extra things you will most likely need to do after installing brew.
+#   If you prefer, we have provided Choclatey Package Manager install steps for Windows users also.
+#
+# 	Run these three commands in your terminal to add Homebrew to your PATH:
+# 	Replace <name> with your username.
+#	$ echo '# Set PATH, MANPATH, etc., for Homebrew.' >> /home/<name>/.profile
+#	$ echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> /home/<name>/.profile
+#	$ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+#
+# 	Install Homebrew's dependencies:
+#	$ sudo apt-get install build-essential
+
+# For Mac/Windows Users with HomeBrew Package Manager
+setup.mac:
 	brew update
 	brew list kubectl || brew install kubectl
 	brew list kustomize || brew install kustomize
@@ -20,12 +41,11 @@ cli.setup.mac:
 # https://community.chocolatey.org/
 # Must 'choco install make' in order to run the code.
 # Choclatey commands will likely need to be run from an Administrative Console.
-cli.setup.windows:
+setup.windows:
 	choco upgrade chocolatey
 	choco install kind
 	choco install kustomize
 	choco install kubernetes-cli
-
 
 ## Docker 
 # Build the docker image
@@ -38,7 +58,7 @@ build:
 	--build-arg=BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
 	--tag=$(IMAGE_TAG) \
 	.
-
+# ==============================================================================
 ## KiND Kubernetes 
 # Create a new kind cluster
 # the k8s/kind/kind-config.yml file specifies
@@ -94,3 +114,64 @@ kind-logs:
 # Delete the kind cluster
 kind-down:
 	kind delete cluster --name $(KIND_CLUSTER)
+
+# ==============================================================================
+# Load Testing
+#
+# Optional tooling.
+# To install run: 
+# `[brew | choco] install hey`
+#
+# Average response time is reported to terminal.
+# Note: This tests round-trip to the database and back
+#       as hey doesn't provide support for sessions. This
+# 		suggests that functionality is faster for users.
+# 
+# Issue HTTP GET request 10,000 times across 100 concurrent workloads.
+load-test:
+	hey -m GET -c 100 -n 10000 http://localhost:8585/coffee
+
+# Load Test Example output: 
+# 	Summary:
+#   Total:	24.9957 secs
+#   Slowest:	0.7804 secs
+#   Fastest:	0.0052 secs
+#   Average:	0.2493 secs
+#   Requests/sec:	400.0696
+
+#   Total data:	4800000 bytes
+#   Size/request:	480 bytes
+
+# Response time histogram:
+#   0.005 [1]	|
+#   0.083 [9]	|
+#   0.160 [288]	|■■
+#   0.238 [5111]|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+#   0.315 [4126]|■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+#   0.393 [108]	|■
+#   0.470 [239]	|■■
+#   0.548 [64]	|■
+#   0.625 [31]	|
+#   0.703 [22]	|
+#   0.780 [1]	|
+
+
+# Latency distribution:
+#   10% in 0.1986 secs
+#   25% in 0.2028 secs
+#   50% in 0.2101 secs
+#   75% in 0.2953 secs
+#   90% in 0.3010 secs
+#   95% in 0.3087 secs
+#   99% in 0.4886 secs
+
+# Details (average, fastest, slowest):
+#   DNS+dialup:	0.0001 secs, 0.0052 secs, 0.7804 secs
+#   DNS-lookup:	0.0000 secs, 0.0000 secs, 0.0037 secs
+#   req write:	0.0000 secs, 0.0000 secs, 0.0033 secs
+#   resp wait:	0.2492 secs, 0.0051 secs, 0.7734 secs
+#   resp read:	0.0000 secs, 0.0000 secs, 0.0045 secs
+
+# Status code distribution:
+#   [200]	10000 responses
+#  END SAMPLE OUTPUT 
