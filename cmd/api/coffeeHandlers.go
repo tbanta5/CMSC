@@ -91,3 +91,46 @@ func (app *application) coffeeDetails(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
 }
+
+func (app *application) adminAddCoffee(w http.ResponseWriter, r *http.Request) {
+	// We expect a content-type of application/json for this request
+	if r.Header.Get("Content-Type") != "application/json" {
+		app.logger.Error("Content-Type is not application/json")
+		http.Error(w, "Content-Type header is not application/json", http.StatusBadRequest)
+		return
+	}
+
+	var newCoffee dataModels.Coffee
+	err := json.NewDecoder(r.Body).Decode(&newCoffee)
+	if err != nil {
+		app.logger.Error("decode json", err)
+		http.Error(w, "Error decoding JSON body", http.StatusBadRequest)
+		return
+	}
+
+	// Validate the coffee data here...
+	// For example, check if the coffee name is not empty
+	if newCoffee.Name == "" {
+		http.Error(w, "Coffee name is required", http.StatusBadRequest)
+		return
+	}
+
+	// Define a timeout for the database operation
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	// Insert the coffee into the database
+	err = newCoffee.AddCoffee(ctx, app.db)
+	if err != nil {
+		app.logger.Error("inserting coffee", err)
+		http.Error(w, "Server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Respond to the client with the ID of the new coffee
+	w.Header().Set("Location", fmt.Sprintf("/coffee/%d", newCoffee.ID))
+	w.WriteHeader(http.StatusCreated)
+	// Optionally return the new coffee object in the response
+	js, _ := json.Marshal(newCoffee)
+	w.Write(js)
+}

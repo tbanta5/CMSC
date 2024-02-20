@@ -20,7 +20,8 @@ type Coffee struct {
 // type Coffees []Coffee
 
 func (c *Coffee) AddCoffee(ctx context.Context, db *pgxpool.Pool) error {
-	return nil
+	const stmt = `INSERT INTO coffee (coffee_name, coffee_description, coffee_price, coffee_caffeine, coffee_calories) VALUES ($1, $2, $3, $4, $5) RETURNING coffee_id`
+	return db.QueryRow(ctx, stmt, c.Name, c.Description, c.Price, c.Caffeine, c.Calories).Scan(&c.ID)
 }
 
 func CoffeeList(ctx context.Context, db *pgxpool.Pool) ([]Coffee, error) {
