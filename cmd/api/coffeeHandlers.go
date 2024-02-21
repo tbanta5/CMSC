@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
-	"cmsc.group2.coffee-api/internal/auth"
 	"cmsc.group2.coffee-api/internal/dataModels"
 	"cmsc.group2.coffee-api/internal/validation"
 	"github.com/julienschmidt/httprouter"
@@ -102,6 +102,7 @@ func (app *application) coffeeDetails(w http.ResponseWriter, r *http.Request) {
 
 	// Pull coffeeList from the session data.
 	// We must type assert to type Coffee
+	// If coffee list has not been pulled, need to pull it.
 	coffeeList, ok := app.sessionManager.Get(r.Context(), "coffeeList").([]dataModels.Coffee)
 	if !ok {
 		app.logger.Error("Session doesn't contain coffeeList")
@@ -129,7 +130,8 @@ func (app *application) coffeeDetails(w http.ResponseWriter, r *http.Request) {
 	w.Write(js)
 }
 
-func (app *application) adminAddCoffee(w http.ResponseWriter, r *http.Request) {
+// TODO: This needs a little work
+func (app *application) newCoffee(w http.ResponseWriter, r *http.Request) {
 	// We expect a content-type of application/json for this request
 	if r.Header.Get("Content-Type") != "application/json" {
 		app.logger.Error("Content-Type is not application/json")
@@ -171,42 +173,6 @@ func (app *application) adminAddCoffee(w http.ResponseWriter, r *http.Request) {
 	// Optionally return the new coffee object in the response
 	js, _ := json.Marshal(newCoffee)
 	w.Write(js)
-}
-
-func (app *application) adminLogin(w http.ResponseWriter, r *http.Request) {
-	// Decode the request body to get admin credentials
-	var creds struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
-
-	err := json.NewDecoder(r.Body).Decode(&creds)
-	if err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	if valid, err := auth.AuthenticateAdminCredentials(app.datastore, creds.Username, creds.Password); !valid {
-		if err != nil {
-			// Log the error for internal tracking
-			app.logger.Error("authenticateAdminCredentials failed", err)
-		}
-		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
-		return
-	}
-
-	// If authentication is successful, generate a JWT token
-	token, err := auth.GenerateAdminToken(creds.Username)
-	if err != nil {
-		http.Error(w, "Error generating token", http.StatusInternalServerError)
-		return
-	}
-
-	// Return the token in a JSON response
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
-		"token": token,
-	})
 }
 
 func (app *application) errorJSON(w http.ResponseWriter, err error, status ...int) {

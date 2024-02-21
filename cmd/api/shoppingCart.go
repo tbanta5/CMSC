@@ -94,17 +94,20 @@ func (app *application) removeCoffee(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve the current shopping cart from the session
-	shoppingCart, ok := app.sessionManager.Get(r.Context(), "shopping_cart").([]dataModels.Coffee)
+	shoppingCart, ok := app.sessionManager.Get(r.Context(), "shoppingCart").([]dataModels.Coffee)
 	if !ok {
-		app.logger.Error("Session doesn't contain shopping_cart")
+		app.logger.Error("Session doesn't contain shoppingCart")
 		http.Error(w, "Shopping cart not found", http.StatusBadRequest)
 		return
 	}
 
 	// Find and remove the coffee from the shopping cart
 	updatedCart := []dataModels.Coffee{}
+	count := 1 // Use a counter to ensure only one item is deleted at a time
 	for _, coffee := range shoppingCart {
-		if coffee.ID != coffeeID {
+		if coffee.ID == coffeeID && count == 1 {
+			count = 0
+		} else {
 			updatedCart = append(updatedCart, coffee)
 		}
 	}
@@ -118,7 +121,7 @@ func (app *application) removeCoffee(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Save the updated cart back to the session
-	app.sessionManager.Put(r.Context(), "shopping_cart", updatedCart)
+	app.sessionManager.Put(r.Context(), "shoppingCart", updatedCart)
 
 	// Write a successful response
 	w.WriteHeader(http.StatusNoContent)
