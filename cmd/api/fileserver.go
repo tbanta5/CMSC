@@ -6,7 +6,6 @@ import (
 )
 
 func (app *application) index(w http.ResponseWriter, r *http.Request) {
-	app.sessionManager.Put(r.Context(), "browsing", "active")
 	// Initialize a slice containing the paths to the two files.
 	// It's important // to note that the file containing our base template must be the *first*
 	// file in the slice.
