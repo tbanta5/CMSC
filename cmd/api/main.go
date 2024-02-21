@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"cmsc.group2.coffee-api/internal/auth"
 	"cmsc.group2.coffee-api/internal/dataModels"
 	"github.com/alexedwards/scs/pgxstore"
 	"github.com/alexedwards/scs/v2"
@@ -38,6 +39,14 @@ type application struct {
 	logger         *slog.Logger
 	sessionManager *scs.SessionManager
 	db             *pgxpool.Pool
+	datastore      auth.Datastore
+}
+
+type myDatastore struct {
+}
+
+func (m *myDatastore) GetAdminUser(username string) (auth.AdminUser, error) {
+	return auth.AdminUser{}, nil
 }
 
 func init() {
@@ -67,6 +76,8 @@ func main() {
 	sessionManager.Store = pgxstore.New(db)
 	sessionManager.Lifetime = 5 * time.Minute
 
+	myDS := &myDatastore{}
+
 	// Initialize the app struct to hold all
 	// core functionality.
 	app := &application{
@@ -74,6 +85,7 @@ func main() {
 		logger:         logger,
 		sessionManager: sessionManager,
 		db:             db,
+		datastore:      myDS,
 	}
 
 	srv := &http.Server{

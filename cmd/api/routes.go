@@ -15,8 +15,12 @@ func (app *application) Routes() *httprouter.Router {
 	router.Handler(http.MethodGet, "/coffee/:id", app.sessionManager.LoadAndSave(http.HandlerFunc(app.coffeeDetails)))
 
 	router.Handler(http.MethodPost, "/cart/:id", app.sessionManager.LoadAndSave(http.HandlerFunc(app.addCoffee)))
-	router.Handler(http.MethodPost, "/admin/coffee", app.sessionManager.LoadAndSave(http.HandlerFunc(app.adminAddCoffee)))
+	router.Handler(http.MethodPost, "/cart/:id", app.sessionManager.LoadAndSave(http.HandlerFunc(app.removeCoffee)))
 	router.Handler(http.MethodGet, "/cart", app.sessionManager.LoadAndSave(http.HandlerFunc(app.shoppingCart)))
+
+	router.Handler(http.MethodPost, "/admin/login", app.sessionManager.LoadAndSave(http.HandlerFunc(app.adminLogin)))
+	router.Handler(http.MethodPost, "/admin/coffee", app.sessionManager.LoadAndSave(http.HandlerFunc(app.adminAddCoffee)))
+
 	// Liveness is used by kubernetes
 	router.HandlerFunc(http.MethodGet, "/liveness", app.liveness)
 

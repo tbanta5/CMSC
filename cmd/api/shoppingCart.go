@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -54,7 +55,7 @@ func (app *application) addCoffee(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if coffee.Name == "" {
-		app.logger.Error("User selected value does not exist", strconv.Itoa(id))
+		app.logger.Error("User selected value does not exist", fmt.Errorf("id: %d", id))
 		http.Error(w, "Invalid Selection", http.StatusBadRequest)
 		return
 	}
@@ -80,4 +81,45 @@ func (app *application) addCoffee(w http.ResponseWriter, r *http.Request) {
 	js = append(js, '\n')
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
+}
+
+func (app *application) removeCoffee(w http.ResponseWriter, r *http.Request) {
+	// Get the coffee ID from the URL parameter
+	params := httprouter.ParamsFromContext(r.Context())
+	coffeeID, err := strconv.Atoi(params.ByName("id"))
+	if err != nil {
+		app.logger.Error("parsing coffee ID", err)
+		http.Error(w, "Invalid coffee ID", http.StatusBadRequest)
+		return
+	}
+
+	// Retrieve the current shopping cart from the session
+	shoppingCart, ok := app.sessionManager.Get(r.Context(), "shopping_cart").([]dataModels.Coffee)
+	if !ok {
+		app.logger.Error("Session doesn't contain shopping_cart")
+		http.Error(w, "Shopping cart not found", http.StatusBadRequest)
+		return
+	}
+
+	// Find and remove the coffee from the shopping cart
+	updatedCart := []dataModels.Coffee{}
+	for _, coffee := range shoppingCart {
+		if coffee.ID != coffeeID {
+			updatedCart = append(updatedCart, coffee)
+		}
+	}
+
+	// If the length of the cart is the same after the removal attempt,
+	// the item was not found
+	if len(updatedCart) == len(shoppingCart) {
+		app.logger.Error("Coffee ID not found in cart", fmt.Errorf("id: %d", coffeeID))
+		http.Error(w, "Coffee ID not found in cart", http.StatusBadRequest)
+		return
+	}
+
+	// Save the updated cart back to the session
+	app.sessionManager.Put(r.Context(), "shopping_cart", updatedCart)
+
+	// Write a successful response
+	w.WriteHeader(http.StatusNoContent)
 }

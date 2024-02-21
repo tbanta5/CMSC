@@ -8,7 +8,9 @@ import (
 	"strconv"
 	"time"
 
+	"cmsc.group2.coffee-api/internal/auth"
 	"cmsc.group2.coffee-api/internal/dataModels"
+	"cmsc.group2.coffee-api/internal/validation"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -108,10 +110,11 @@ func (app *application) adminAddCoffee(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate the coffee data here...
-	// For example, check if the coffee name is not empty
-	if newCoffee.Name == "" {
-		http.Error(w, "Coffee name is required", http.StatusBadRequest)
+	// Call the ValidateCoffee function from the validation package
+	err = validation.ValidateCoffee(&newCoffee)
+	if err != nil {
+		// Handle validation errors
+		app.errorJSON(w, err, http.StatusBadRequest)
 		return
 	}
 
@@ -133,4 +136,59 @@ func (app *application) adminAddCoffee(w http.ResponseWriter, r *http.Request) {
 	// Optionally return the new coffee object in the response
 	js, _ := json.Marshal(newCoffee)
 	w.Write(js)
+}
+
+func (app *application) adminLogin(w http.ResponseWriter, r *http.Request) {
+	// Decode the request body to get admin credentials
+	var creds struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&creds)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	if valid, err := auth.AuthenticateAdminCredentials(app.datastore, creds.Username, creds.Password); !valid {
+		if err != nil {
+			// Log the error for internal tracking
+			app.logger.Error("authenticateAdminCredentials failed", err)
+		}
+		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+		return
+	}
+
+	// If authentication is successful, generate a JWT token
+	token, err := auth.GenerateAdminToken(creds.Username)
+	if err != nil {
+		http.Error(w, "Error generating token", http.StatusInternalServerError)
+		return
+	}
+
+	// Return the token in a JSON response
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"token": token,
+	})
+}
+
+func (app *application) errorJSON(w http.ResponseWriter, err error, status ...int) {
+	statusCode := http.StatusBadRequest
+	if len(status) > 0 {
+		statusCode = status[0]
+	}
+
+	type jsonError struct {
+		Message string `json:"message"`
+	}
+
+	theError := jsonError{
+		Message: err.Error(),
+	}
+
+	w.WriteHeader(statusCode)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(theError)
 }
