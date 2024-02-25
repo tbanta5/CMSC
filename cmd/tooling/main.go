@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log/slog"
 	"os"
+	"time"
 
+	"cmsc.group2.coffee-api/cmd/tooling/cmd"
 	"cmsc.group2.coffee-api/internal/schema"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
@@ -43,4 +46,35 @@ func main() {
 		os.Exit(1)
 	}
 	logger.Info("Seed Complete")
+
+	// Generate an admin password hash
+	// here we use 'password123$' as default
+	hash, err := cmd.CreateAdminPassword()
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+	// here we create an annonymous struct
+	admin := struct {
+		name  string
+		email string
+		hash  []byte
+	}{
+		name:  "admin",
+		email: "admin@coffeeshop.com",
+		hash:  hash,
+	}
+
+	// Hard coded and in need of some love at a later date.
+	adminSeed := `INSERT into users (name, email, password_hash) VALUES
+    ($1,$2,$3);`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err = db.ExecContext(ctx, adminSeed, admin.name, admin.email, admin.hash)
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
 }
