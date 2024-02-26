@@ -16,9 +16,6 @@ type Coffee struct {
 	Calories    int     `db:"coffee_calories" json:"calories,omitempty"`
 }
 
-// Slice of Coffees
-// type Coffees []Coffee
-
 func (c *Coffee) AddCoffee(ctx context.Context, db *pgxpool.Pool) error {
 	const stmt = `INSERT INTO coffee (coffee_name, coffee_description, coffee_price, coffee_caffeine, coffee_calories) VALUES ($1, $2, $3, $4, $5) RETURNING coffee_id`
 	return db.QueryRow(ctx, stmt, c.Name, c.Description, c.Price, c.Caffeine, c.Calories).Scan(&c.ID)

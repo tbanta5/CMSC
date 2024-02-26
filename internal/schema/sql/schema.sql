@@ -10,7 +10,7 @@ CREATE TABLE sessions (
 CREATE INDEX sessions_expiry_idx ON sessions (expiry);
 
 -- Version: 1.2
--- Description: Coffee products, represent price with [S,M,L,X]
+-- Description: Coffee products
 CREATE TABLE coffee (
 	coffee_id INT GENERATED ALWAYS AS IDENTITY,
 	coffee_name TEXT,
@@ -22,16 +22,23 @@ CREATE TABLE coffee (
 );
 
 -- Version: 1.3
--- Description: Cart will map to session token. 
--- Each cart will contain user session and coffees added.
--- If session is deleted, cart will also be deleted.
--- CREATE TABLE shoppingcart (
--- 	cart_id INT GENERATED ALWAYS AS IDENTITY,
--- 	sessions_token TEXT,
--- 	customs_coffees_id INT,
--- 	PRIMARY KEY (cart_id),
--- 	CONSTRAINT fk_session
--- 		FOREIGN KEY(sessions_token)
--- 			REFERENCES sessions(token)
--- 			ON DELETE CASCADE
--- );
+-- Description: Create User table, used for only admin currently
+CREATE EXTENSION citext;
+
+CREATE TABLE users (
+id bigserial PRIMARY KEY,
+created_at timestamp(0) with time zone NOT NULL DEFAULT NOW(), 
+name text NOT NULL,
+email citext UNIQUE NOT NULL,
+password_hash bytea NOT NULL
+);
+
+-- Version: 1.4
+-- Description: Create Tokens for the privileged actions
+CREATE TABLE tokens (
+hash bytea PRIMARY KEY,
+user_id bigint NOT NULL REFERENCES users ON DELETE CASCADE, 
+expiry timestamp(0) with time zone NOT NULL,
+scope text NOT NULL
+);
+
