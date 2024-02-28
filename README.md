@@ -5,7 +5,7 @@ That being said, a comfortable development workflow was established following mi
 
 ## Design
 
-![alt text](https://github.com/tbanta5/CMSC/blob/main/.readme-images/Initia-arch.png)
+![alt text](https://github.com/tbanta5/CMSC/blob/main/.readme-images/Coffee_NO_Java_Schema.png)
 
 ## Development
 Development within this environment is meant to be repeatable, cohesive and transparent. To achieve this, we use Makefile to represent all patterns within development and as the source of truth for the project. This informs the user of what will be done and boosts confidence in the underlying processes that would otherwise be "magic".
