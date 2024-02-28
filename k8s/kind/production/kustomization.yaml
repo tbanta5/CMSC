@@ -4,7 +4,7 @@ resources:
 - ../../base/coffee-api/
 images:
 - name: coffee-api
-  newName: coffee-api-prod
-  newTag: 1.0.0
+  newName: coffee-no-java
+  newTag: 0.0.1
 patches:
 - path: ./coffee-prod-patch.yml

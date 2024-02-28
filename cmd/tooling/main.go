@@ -18,7 +18,9 @@ func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	// The Darwin lib reqiures that pgx follow database/sql interfaces.
-	db, err := sql.Open("pgx", "user=postgres password=p@55word123 host=localhost port=5432 database=postgres sslmode=disable")
+	// db, err := sql.Open("pgx", "user=postgres password=p@55word123 host=localhost port=5432 database=postgres sslmode=disable")
+	db_dsn := os.Getenv("DB_DSN")
+	db, err := sql.Open("pgx", db_dsn)
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1) // Exit if there is a problem with DB connection
