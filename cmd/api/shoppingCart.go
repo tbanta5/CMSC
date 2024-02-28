@@ -10,13 +10,33 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+// Define a new struct to hold the items and the total
+type userCart struct {
+	Items []dataModels.Coffee `json:"items"`
+	Total float64             `json:"total"`
+}
+
 func (app *application) shoppingCart(w http.ResponseWriter, r *http.Request) {
+	// Retrieve the current shopping cart from the session
 	shoppingCart, ok := app.sessionManager.Get(r.Context(), "shoppingCart").([]dataModels.Coffee)
 	if !ok {
 		shoppingCart = []dataModels.Coffee{}
 	}
-	// Here we need to calculate the items price in shopping cart and return a price
-	js, err := json.Marshal(shoppingCart)
+
+	// Calculate the total price of the items in the shopping cart
+	var total float64
+	for _, item := range shoppingCart {
+		total += item.Price // Assuming that the Price field is a float64
+	}
+
+	// Create a userCart struct to hold the items and the total
+	cart := userCart{
+		Items: shoppingCart,
+		Total: total,
+	}
+
+	// Marshal the userCart struct into JSON
+	js, err := json.Marshal(cart)
 	if err != nil {
 		app.logger.Error("marshal json", err)
 		http.Error(w, "Server error", http.StatusInternalServerError)
