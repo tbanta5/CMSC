@@ -80,3 +80,30 @@ func CoffeeDetails(ctx context.Context, db *pgxpool.Pool, id int) (Coffee, error
 
 	return coffee, nil
 }
+
+func DeleteCoffee(ctx context.Context, db *pgxpool.Pool, id int) error {
+	const stmt = `DELETE from coffee where coffee_id=$1;`
+	_, err := db.Exec(ctx, stmt, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func UpdateCoffee(ctx context.Context, db *pgxpool.Pool, id int, coffee Coffee) error {
+	const stmt = `UPDATE coffee set
+	coffee_name = $1, 
+	coffee_description = $2, 
+	coffee_price = $3,
+	coffee_caffeine = $4, 
+	coffee_calories = $5 
+	WHERE coffee_id = $6
+	`
+	args := []any{coffee.Name, coffee.Description, coffee.Price, coffee.Caffeine, coffee.Calories, id}
+
+	_, err := db.Exec(ctx, stmt, args...)
+	if err != nil {
+		return err
+	}
+	return nil
+}

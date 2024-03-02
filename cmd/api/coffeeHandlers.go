@@ -196,3 +196,75 @@ func (app *application) newCoffee(w http.ResponseWriter, r *http.Request) {
 	js = append(js, '\n')
 	w.Write(js)
 }
+func (app *application) updateCoffee(w http.ResponseWriter, r *http.Request) {
+	// Get the parameters from the request url context, ie ":id"
+	params := httprouter.ParamsFromContext(r.Context())
+	id, err := strconv.Atoi(params.ByName("id"))
+	if err != nil {
+		app.logger.Error("parsing id param", err)
+		http.Error(w, "Server error", http.StatusInternalServerError)
+		return
+	}
+	var coffee dataModels.Coffee
+	err = json.NewDecoder(r.Body).Decode(&coffee)
+	if err != nil {
+		app.logger.Error("decode json", err)
+		http.Error(w, "Error decoding JSON body", http.StatusBadRequest)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	// Call the database
+	err = dataModels.UpdateCoffee(ctx, app.db, id, coffee)
+	if err != nil {
+		app.logger.Error("dataModels.CoffeList", err)
+		http.Error(w, "Server error", http.StatusInternalServerError)
+		return
+	}
+	msg := fmt.Sprintf("Updated coffee %d", id)
+	success := map[string]string{"success": msg}
+	js, err := json.Marshal(success)
+	if err != nil {
+		app.logger.Error("marshal json", err)
+		http.Error(w, "Server error", http.StatusInternalServerError)
+		return
+	}
+	// Write response to http.ResponseWriter
+	js = append(js, '\n')
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+func (app *application) deleteCoffee(w http.ResponseWriter, r *http.Request) {
+	// Get the parameters from the request url context, ie ":id"
+	params := httprouter.ParamsFromContext(r.Context())
+	id, err := strconv.Atoi(params.ByName("id"))
+	if err != nil {
+		app.logger.Error("parsing id param", err)
+		http.Error(w, "Server error", http.StatusInternalServerError)
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	// Call the database
+	err = dataModels.DeleteCoffee(ctx, app.db, id)
+	if err != nil {
+		app.logger.Error("dataModels.CoffeList", err)
+		http.Error(w, "Server error", http.StatusInternalServerError)
+		return
+	}
+	msg := fmt.Sprintf("Deleted coffee %d", id)
+	success := map[string]string{"success": msg}
+	js, err := json.Marshal(success)
+	if err != nil {
+		app.logger.Error("marshal json", err)
+		http.Error(w, "Server error", http.StatusInternalServerError)
+		return
+	}
+	// Write response to http.ResponseWriter
+	js = append(js, '\n')
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}

@@ -15,6 +15,8 @@ func (app *application) Routes() *httprouter.Router {
 	router.Handler(http.MethodGet, "/coffee/:id", app.sessionManager.LoadAndSave(http.HandlerFunc(app.coffeeDetails)))
 	// Add middleware to the below endpoints to validate authToken
 	router.Handler(http.MethodPost, "/coffee", app.authenticate(http.HandlerFunc(app.newCoffee)))
+	router.Handler(http.MethodDelete, "/coffee/:id", app.authenticate(http.HandlerFunc(app.deleteCoffee)))
+	router.Handler(http.MethodPatch, "/coffee/:id", app.authenticate(http.HandlerFunc(app.updateCoffee)))
 
 	router.Handler(http.MethodPost, "/cart/:id", app.sessionManager.LoadAndSave(http.HandlerFunc(app.addCoffee)))
 	router.Handler(http.MethodDelete, "/cart/:id", app.sessionManager.LoadAndSave(http.HandlerFunc(app.removeCoffee)))
