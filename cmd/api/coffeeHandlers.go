@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -128,50 +129,44 @@ func (app *application) coffeeDetails(w http.ResponseWriter, r *http.Request) {
 	w.Write(js)
 }
 
-// TODO: This needs a little work
-// func (app *application) newCoffee(w http.ResponseWriter, r *http.Request) {
-// 	// We expect a content-type of application/json for this request
-// 	if r.Header.Get("Content-Type") != "application/json" {
-// 		app.logger.Error("Content-Type is not application/json")
-// 		http.Error(w, "Content-Type header is not application/json", http.StatusBadRequest)
-// 		return
-// 	}
+func (app *application) newCoffee(w http.ResponseWriter, r *http.Request) {
+	// We expect a content-type of application/json for this request
+	if r.Header.Get("Content-Type") != "application/json" {
+		app.logger.Error("Content-Type is not application/json")
+		http.Error(w, "Content-Type header is not application/json", http.StatusBadRequest)
+		return
+	}
 
-// 	var newCoffee dataModels.Coffee
-// 	err := json.NewDecoder(r.Body).Decode(&newCoffee)
-// 	if err != nil {
-// 		app.logger.Error("decode json", err)
-// 		http.Error(w, "Error decoding JSON body", http.StatusBadRequest)
-// 		return
-// 	}
+	var newCoffee dataModels.Coffee
+	err := json.NewDecoder(r.Body).Decode(&newCoffee)
+	if err != nil {
+		app.logger.Error("decode json", err)
+		http.Error(w, "Error decoding JSON body", http.StatusBadRequest)
+		return
+	}
 
-// 	// Call the ValidateCoffee function from the validation package
-// 	err = validation.ValidateCoffee(&newCoffee)
-// 	if err != nil {
-// 		// Handle validation errors
-// 		app.errorJSON(w, err, http.StatusBadRequest)
-// 		return
-// 	}
+	// Define a timeout for the database operation
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
 
-// 	// Define a timeout for the database operation
-// 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-// 	defer cancel()
+	// Insert the coffee into the database
+	id, err := dataModels.AddCoffee(ctx, app.db, newCoffee)
+	if err != nil {
+		app.logger.Error("inserting coffee", err)
+		http.Error(w, "Server error", http.StatusInternalServerError)
+		return
+	}
 
-// 	// Insert the coffee into the database
-// 	err = newCoffee.AddCoffee(ctx, app.db)
-// 	if err != nil {
-// 		app.logger.Error("inserting coffee", err)
-// 		http.Error(w, "Server error", http.StatusInternalServerError)
-// 		return
-// 	}
+	// Respond to the client with the ID of the new coffee
+	w.Header().Set("Location", fmt.Sprintf("/coffee/%d", id))
+	w.WriteHeader(http.StatusCreated)
+	w.Header().Set("Content-Type", "application/json")
 
-// 	// Respond to the client with the ID of the new coffee
-// 	w.Header().Set("Location", fmt.Sprintf("/coffee/%d", newCoffee.ID))
-// 	w.WriteHeader(http.StatusCreated)
-// 	// Optionally return the new coffee object in the response
-// 	js, _ := json.Marshal(newCoffee)
-// 	w.Write(js)
-// }
+	success := map[string]string{"success": "coffee added"}
+	js, _ := json.Marshal(success)
+	js = append(js, '\n')
+	w.Write(js)
+}
 
 // func (app *application) errorJSON(w http.ResponseWriter, err error, status ...int) {
 // 	statusCode := http.StatusBadRequest
