@@ -3,6 +3,7 @@ ENVIRONMENT := develop
 APIPORT := 8585 # Will also need manual changes in k8s manifests
 DBPORT := 5432  # Will also need manual changes in k8s manifests
 VERSION := 0.0.1
+DB_DSN := "postgres://postgres:pa55word123@localhost:5432/postgres?sslmode=disable"
 BASE_IMAGE := coffee-no-java
 IMAGE_TAG := $(BASE_IMAGE):$(VERSION)
 KIND_CLUSTER := coffee-cluser
@@ -55,6 +56,7 @@ build:
 	--build-arg=BUILD_REF=$(ENVIRONMENT) \
 	--build-arg=VERSION=$(VERSION) \
 	--build-arg=PORT=$(APIPORT) \
+	--build-arg=DB_DSN=$(DB_DSN) \
 	--build-arg=BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
 	--tag=$(IMAGE_TAG) \
 	.

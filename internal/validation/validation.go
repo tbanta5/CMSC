@@ -49,8 +49,3 @@ func Unique[T comparable](values []T) bool {
 	}
 	return len(values) == len(uniqueValues)
 }
-
-// func ValidateCoffee(coffee *dataModels.Coffee) error {
-// 	// Perform validation and return any errors
-// 	return validate.Struct(coffee)
-// }

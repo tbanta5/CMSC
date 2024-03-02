@@ -20,6 +20,8 @@ FROM alpine:3.19
 ARG BUILD_DATE
 ARG BUILD_REF
 ARG PORT
+ARG DB_DSN
+ENV DB_DSN=${DB_DSN}
 
 # Ensure we have a valid user and group
 RUN addgroup -g 1000 -S api-user && \

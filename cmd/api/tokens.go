@@ -54,7 +54,7 @@ func (app *application) createAuthToken(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// If password is correct, we issue the token
-	token, err := dataModels.New(app.db, user.ID, 4*time.Hour, dataModels.ScopeAuthentication)
+	token, err := dataModels.NewToken(app.db, user.ID, 4*time.Hour, dataModels.ScopeAuthentication)
 	if err != nil {
 		app.logger.Error("Error from New Token creation", err)
 		http.Error(w, "error processing", http.StatusInternalServerError)
