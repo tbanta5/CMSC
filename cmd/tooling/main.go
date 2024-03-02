@@ -32,7 +32,18 @@ func main() {
 		logger.Error(err.Error())
 		os.Exit(1) // Exit if cannot ping DB
 	}
-
+	// Test to ensure db is not already up.
+	// This is useful in event of a pod deletion/death
+	// since database seeding and migrations are done via
+	// the intiContainer which runs for every newly started pod.
+	// This action cause an ERROR originally in the db
+	// assuming nothing has been migrated yet.
+	stmt := `select coffee_id from coffee where coffee_id=1;`
+	_, err = db.Exec(stmt)
+	if err == nil {
+		// Assume we got the statement back
+		os.Exit(0)
+	}
 	// Perform migrations
 	err = schema.Migrate(db)
 	if err != nil {
