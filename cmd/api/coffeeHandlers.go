@@ -104,10 +104,42 @@ func (app *application) coffeeDetails(w http.ResponseWriter, r *http.Request) {
 	// If coffee list has not been pulled, need to pull it.
 	coffeeList, ok := app.sessionManager.Get(r.Context(), "coffeeList").([]dataModels.Coffee)
 	if !ok {
-		app.logger.Error("Session doesn't contain coffeeList")
-		http.Error(w, "Coffee products not available", http.StatusBadRequest)
+		// app.logger.Error("Session doesn't contain coffeeList")
+		// http.Error(w, "Coffee products not available", http.StatusBadRequest)
+		// return
+		// If coffeeList doesn't exists yet, we call the database.
+		// Define a timeout for the database retrieval
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+
+		// Call the database
+		coffeeList, err := dataModels.CoffeeList(ctx, app.db)
+		if err != nil {
+			app.logger.Error("dataModels.CoffeList", err)
+			http.Error(w, "Server error", http.StatusInternalServerError)
+			return
+		}
+		app.sessionManager.Put(r.Context(), "coffeeList", coffeeList)
+		coffeeDesc := dataModels.Coffee{}
+		for _, coffee := range coffeeList {
+			if coffee.ID == id {
+				coffeeDesc = coffee
+				break
+			}
+		}
+
+		js, err := json.Marshal(coffeeDesc)
+		if err != nil {
+			app.logger.Error("marshal json", err)
+			http.Error(w, "Server error", http.StatusInternalServerError)
+			return
+		}
+		// Write response to http.ResponseWriter
+		js = append(js, '\n')
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(js)
 		return
-	}
+	} // End initial DB Call for List of Products
 
 	coffeeDesc := dataModels.Coffee{}
 	for _, coffee := range coffeeList {
