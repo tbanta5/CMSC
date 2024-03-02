@@ -22,7 +22,7 @@ type Token struct {
 	Scope     string    `json:"-"`
 }
 
-func New(db *pgxpool.Pool, userID int64, ttl time.Duration, scope string) (*Token, error) {
+func NewToken(db *pgxpool.Pool, userID int64, ttl time.Duration, scope string) (*Token, error) {
 	token, err := generateToken(userID, ttl, scope)
 	if err != nil {
 		return nil, err
@@ -66,6 +66,18 @@ func generateToken(userID int64, ttl time.Duration, scope string) (*Token, error
 	return token, nil
 }
 
-func IsValidAdmin(token string) bool {
-	return true
+func IsValidAdmin(db *pgxpool.Pool, token string) (bool, error) {
+	var t Token
+	hash := sha256.Sum256([]byte(token))
+	stmt := `SELECT * from tokens where hash=$1`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	err := db.QueryRow(ctx, stmt, hash).Scan(&t)
+	if err != nil {
+		return false, err
+	}
+	if t.Expiry.Before(time.Now()) {
+		return false, nil
+	}
+	return true, nil
 }

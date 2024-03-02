@@ -33,7 +33,12 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 
 		token := headerParts[1]
 
-		if valid := dataModels.IsValidAdmin(token); !valid {
+		valid, err := dataModels.IsValidAdmin(app.db, token)
+		if err != nil {
+			app.logger.Error("Error with token validation", err)
+			http.Error(w, "Internal Error", http.StatusInternalServerError)
+		}
+		if !valid {
 			w.Header().Set("WWW-Authenticate", "Bearer")
 			message := "invalid or missing auth token"
 			http.Error(w, message, http.StatusUnauthorized)
