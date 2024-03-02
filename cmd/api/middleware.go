@@ -44,5 +44,6 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 			http.Error(w, message, http.StatusUnauthorized)
 			return
 		}
+		next.ServeHTTP(w, r)
 	})
 }
