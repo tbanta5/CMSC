@@ -17,12 +17,11 @@ type Coffee struct {
 }
 
 func AddCoffee(ctx context.Context, db *pgxpool.Pool, c Coffee) (int, error) {
-
 	const stmt = `
 	INSERT INTO coffee 
 	(coffee_name, coffee_description, coffee_price, coffee_caffeine, coffee_calories) 
 	VALUES ($1, $2, $3, $4, $5) RETURNING coffee_id`
-	err := db.QueryRow(ctx, stmt, c.Name, c.Description, c.Price, c.Caffeine, c.Calories).Scan(c.ID)
+	err := db.QueryRow(ctx, stmt, c.Name, c.Description, c.Price, c.Caffeine, c.Calories).Scan(&c.ID)
 	if err != nil {
 		return 0, err
 	}

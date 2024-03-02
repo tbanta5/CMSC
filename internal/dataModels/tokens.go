@@ -69,10 +69,11 @@ func generateToken(userID int64, ttl time.Duration, scope string) (*Token, error
 func IsValidAdmin(db *pgxpool.Pool, token string) (bool, error) {
 	var t Token
 	hash := sha256.Sum256([]byte(token))
-	stmt := `SELECT * from tokens where hash=$1`
+
+	stmt := `SELECT expiry,hash from tokens where hash=$1`
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	err := db.QueryRow(ctx, stmt, hash).Scan(&t)
+	err := db.QueryRow(ctx, stmt, hash[:]).Scan(&t.Expiry, &t.Hash)
 	if err != nil {
 		return false, err
 	}

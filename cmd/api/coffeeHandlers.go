@@ -131,11 +131,8 @@ func (app *application) coffeeDetails(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) newCoffee(w http.ResponseWriter, r *http.Request) {
 	// We expect a content-type of application/json for this request
-	if r.Header.Get("Content-Type") != "application/json" {
-		app.logger.Error("Content-Type is not application/json")
-		http.Error(w, "Content-Type header is not application/json", http.StatusBadRequest)
-		return
-	}
+	// However the determining factor will be whether the data can
+	// marshall to json struct or not.
 
 	var newCoffee dataModels.Coffee
 	err := json.NewDecoder(r.Body).Decode(&newCoffee)
@@ -161,28 +158,9 @@ func (app *application) newCoffee(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Location", fmt.Sprintf("/coffee/%d", id))
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
-
-	success := map[string]string{"success": "coffee added"}
+	msg := fmt.Sprintf("coffee added %d", id)
+	success := map[string]string{"success": msg}
 	js, _ := json.Marshal(success)
 	js = append(js, '\n')
 	w.Write(js)
 }
-
-// func (app *application) errorJSON(w http.ResponseWriter, err error, status ...int) {
-// 	statusCode := http.StatusBadRequest
-// 	if len(status) > 0 {
-// 		statusCode = status[0]
-// 	}
-
-// 	type jsonError struct {
-// 		Message string `json:"message"`
-// 	}
-
-// 	theError := jsonError{
-// 		Message: err.Error(),
-// 	}
-
-// 	w.WriteHeader(statusCode)
-// 	w.Header().Set("Content-Type", "application/json")
-// 	json.NewEncoder(w).Encode(theError)
-// }
