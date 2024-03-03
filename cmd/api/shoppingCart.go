@@ -16,6 +16,8 @@ type userCart struct {
 	Total float64             `json:"total"`
 }
 
+// shoppingCart lists a users shopping cart
+// this list is tied to a sessionCookie.
 func (app *application) shoppingCart(w http.ResponseWriter, r *http.Request) {
 	// Retrieve the current shopping cart from the session
 	shoppingCart, ok := app.sessionManager.Get(r.Context(), "shoppingCart").([]dataModels.Coffee)
@@ -48,6 +50,8 @@ func (app *application) shoppingCart(w http.ResponseWriter, r *http.Request) {
 	w.Write(js)
 }
 
+// addCoffee adds a coffee to a users shopping cart
+// The user cart is tied to a session cookie.
 func (app *application) addCoffee(w http.ResponseWriter, r *http.Request) {
 	// Get the parameters from the request url context, ie ":id"
 	params := httprouter.ParamsFromContext(r.Context())
@@ -90,8 +94,9 @@ func (app *application) addCoffee(w http.ResponseWriter, r *http.Request) {
 	shoppingCart = append(shoppingCart, coffee)
 	app.sessionManager.Put(r.Context(), "shoppingCart", shoppingCart)
 
-	msg := map[string]string{"success": "cart updated"}
-	js, err := json.Marshal(msg)
+	msg := fmt.Sprintf("Coffee %d added", id)
+	success := map[string]string{"success": msg}
+	js, err := json.Marshal(success)
 	if err != nil {
 		app.logger.Error("marshal json", err)
 		http.Error(w, "Server error", http.StatusInternalServerError)
@@ -103,10 +108,12 @@ func (app *application) addCoffee(w http.ResponseWriter, r *http.Request) {
 	w.Write(js)
 }
 
+// removeCoffee removes coffee from users shopping cart
+// The user cart is tied to a sessionCookie
 func (app *application) removeCoffee(w http.ResponseWriter, r *http.Request) {
 	// Get the coffee ID from the URL parameter
 	params := httprouter.ParamsFromContext(r.Context())
-	coffeeID, err := strconv.Atoi(params.ByName("id"))
+	id, err := strconv.Atoi(params.ByName("id"))
 	if err != nil {
 		app.logger.Error("parsing coffee ID", err)
 		http.Error(w, "Invalid coffee ID", http.StatusBadRequest)
@@ -125,7 +132,7 @@ func (app *application) removeCoffee(w http.ResponseWriter, r *http.Request) {
 	updatedCart := []dataModels.Coffee{}
 	count := 1 // Use a counter to ensure only one item is deleted at a time
 	for _, coffee := range shoppingCart {
-		if coffee.ID == coffeeID && count == 1 {
+		if coffee.ID == id && count == 1 {
 			count = 0
 		} else {
 			updatedCart = append(updatedCart, coffee)
@@ -135,7 +142,7 @@ func (app *application) removeCoffee(w http.ResponseWriter, r *http.Request) {
 	// If the length of the cart is the same after the removal attempt,
 	// the item was not found
 	if len(updatedCart) == len(shoppingCart) {
-		app.logger.Error("Coffee ID not found in cart", fmt.Errorf("id: %d", coffeeID))
+		app.logger.Error("Coffee ID not found in cart", fmt.Errorf("id: %d", id))
 		http.Error(w, "Coffee ID not found in cart", http.StatusBadRequest)
 		return
 	}
@@ -144,5 +151,16 @@ func (app *application) removeCoffee(w http.ResponseWriter, r *http.Request) {
 	app.sessionManager.Put(r.Context(), "shoppingCart", updatedCart)
 
 	// Write a successful response
-	w.WriteHeader(http.StatusNoContent)
+	msg := fmt.Sprintf("Deleted coffee %d", id)
+	success := map[string]string{"success": msg}
+	js, err := json.Marshal(success)
+	if err != nil {
+		app.logger.Error("marshal json", err)
+		http.Error(w, "Server error", http.StatusInternalServerError)
+		return
+	}
+	// Write response to http.ResponseWriter
+	js = append(js, '\n')
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
 }

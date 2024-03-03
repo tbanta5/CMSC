@@ -82,6 +82,7 @@ func CoffeeDetails(ctx context.Context, db *pgxpool.Pool, id int) (Coffee, error
 }
 
 func DeleteCoffee(ctx context.Context, db *pgxpool.Pool, id int) error {
+
 	const stmt = `DELETE from coffee where coffee_id=$1;`
 	_, err := db.Exec(ctx, stmt, id)
 	if err != nil {
@@ -106,4 +107,11 @@ func UpdateCoffee(ctx context.Context, db *pgxpool.Pool, id int, coffee Coffee) 
 		return err
 	}
 	return nil
+}
+
+func CheckCoffeeExists(ctx context.Context, db *pgxpool.Pool, id int) bool {
+	const stmt = `select coffee_id from coffee where coffee_id=$1`
+	_, err := db.Exec(ctx, stmt, id)
+	// This will be false or true depending.
+	return err != nil
 }
