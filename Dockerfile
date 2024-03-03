@@ -22,6 +22,10 @@ ARG BUILD_REF
 ARG PORT
 ARG DB_DSN
 ENV DB_DSN=${DB_DSN}
+# Set initial coffee-api admin password for db seeding.
+# This is used by migrations binary.
+ARG ADMIN_PASSWD
+ENV ADMIN_PASSWD=${ADMIN_PASSWD}
 
 # Ensure we have a valid user and group
 RUN addgroup -g 1000 -S api-user && \

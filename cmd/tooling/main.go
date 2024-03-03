@@ -15,10 +15,12 @@ import (
 // This tool is used to seed the database
 
 func main() {
+	// This allows us to add an initial admin password to the database.
+	pwd := os.Getenv("ADMIN_PASSWD")
+
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	// The Darwin lib reqiures that pgx follow database/sql interfaces.
-	// db, err := sql.Open("pgx", "user=postgres password=p@55word123 host=localhost port=5432 database=postgres sslmode=disable")
 	db_dsn := os.Getenv("DB_DSN")
 	db, err := sql.Open("pgx", db_dsn)
 	if err != nil {
@@ -62,7 +64,7 @@ func main() {
 
 	// Generate an admin password hash
 	// here we use 'password123$' as default
-	hash, err := cmd.CreateAdminPassword()
+	hash, err := cmd.CreateAdminPassword(pwd)
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)

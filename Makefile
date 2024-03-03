@@ -3,6 +3,9 @@ ENVIRONMENT := develop
 APIPORT := 8585 # Will also need manual changes in k8s manifests
 DBPORT := 5432  # Will also need manual changes in k8s manifests
 VERSION := 0.0.1
+ADMIN_PASSWD := "p@5fjaskdl45fadkfjl"
+BUILD_DATE := `date -u +"%Y-%m-%dT%H:%M:%SZ"`
+# ADMIN_PASSWD := 'password123$$' # In make dollar signs must be escaped. $$ = $ for this string.
 DB_DSN := "postgres://postgres:pa55word123@localhost:5432/postgres?sslmode=disable"
 BASE_IMAGE := coffee-no-java
 IMAGE_TAG := $(BASE_IMAGE):$(VERSION)
@@ -57,7 +60,8 @@ build:
 	--build-arg=VERSION=$(VERSION) \
 	--build-arg=PORT=$(APIPORT) \
 	--build-arg=DB_DSN=$(DB_DSN) \
-	--build-arg=BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+	--build-arg=ADMIN_PASSWD=$(ADMIN_PASSWD) \
+	--build-arg=BUILD_DATE=$(BUILD_DATE) \
 	--tag=$(IMAGE_TAG) \
 	.
 # ==============================================================================

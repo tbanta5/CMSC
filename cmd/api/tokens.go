@@ -50,7 +50,9 @@ func (app *application) createAuthToken(w http.ResponseWriter, r *http.Request) 
 	}
 
 	if !match {
+		app.logger.Error("Account mismatch", err)
 		http.Error(w, "Authentication failure", http.StatusUnauthorized)
+		return
 	}
 
 	// If password is correct, we issue the token
